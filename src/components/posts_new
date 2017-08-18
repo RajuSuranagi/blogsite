@@ -1,0 +1,73 @@
+import React, { Component, PropTypes } from 'react';
+import {reduxForm} from 'redux-form';
+import {createPost} from '../actions/index';
+import { Link } from 'react-router';
+
+class NewPost extends Component {
+
+    static contextTypes = {
+        router: PropTypes.object
+    }
+    onSubmit(props){
+        this.props.createPost(props)
+            .then(() => {
+                // THe post has been created successfully. Hence forward the user to the index page
+                this.context.router.push('/');
+
+            });
+    }
+    render() {
+        //const { handleSubmit } = this.props;
+        const handleSubmit = this.props.handleSubmit;
+        const fields = this.props.fields;
+        console.log(fields.title);
+
+        return (
+            <form onSubmit={handleSubmit(this.onSubmit.bind(this))}>
+                <h3>Create a new post</h3>
+                <div className={`form-group ${fields.title.touched && fields.title.invalid ? 'has-danger' : ''}`}>
+                    <label>Title</label>
+                    <input type="text" className="form-control" {...fields.title}/>
+                    <div className="help-text">{fields.title.touched ? fields.title.error : ''}</div>
+                </div>
+                <div className={`form-group ${fields.categories.touched && fields.categories.invalid ? 'has-danger' : ''}`}>
+                    <label>Categories</label>
+                    <input type="text" className="form-control" {...fields.categories}/>
+                    <div className="help-text">{fields.categories.touched ? fields.categories.error : ''}</div>
+                </div>
+                <div className={`form-group ${fields.content.touched && fields.content.invalid ? 'has-danger' : ''}`}>
+                    <label>Content</label>
+                    <textarea className="form-control" {...fields.content} />
+                    <div className="help-text">{fields.content.touched ? fields.content.error : ''}</div>
+                </div>
+
+                <button type="submit" className="btn btn-primary">Submit</button>
+                <Link to="/" className="btn btn-danger">Cancel</Link>
+            </form>
+        );
+    }
+}
+
+function validate(values){
+    const errors = {};
+
+    if(!values.title){
+        errors.title = 'Enter a title for this blog';
+    }
+    if(!values.categories){
+        errors.categories = 'Enter tags or categories';
+    }
+    if(!values.title){
+        errors.content = 'Enter the content';
+    }
+
+    return errors;
+}
+
+// connect: first argument is mapStateToProps and the second arg is mapDispatchToProps
+// reduxForm: first is map config and second is mapStateToProps, third is mapDispatchToProps
+export default reduxForm({
+    form: 'newPost',
+    fields: [ 'title', 'categories', 'content' ],
+    validate
+}, null, { createPost })(NewPost);
